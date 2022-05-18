@@ -1,17 +1,17 @@
-from email import header
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import re
+import black 
 
 gall_num = list()
 datas = list()
 
-blackword = ['시발', '게이', '급식', '꼰대' ,'ㅅㅂ', '새끼', '섹스', 'ㅂㅅ' ,'씨발', '병신', '좆', '십새', '정액']
+blackword = black.blackword()
 blacklist = list()
 
-for i in range(1,5):
-    url = f'https://gall.dcinside.com/board/lists?id=ib_new2&page={i}'
+for i in range(1, 4):
+    url = f'https://gall.dcinside.com/board/lists/?id=stream_new1&page={i}'
     res = requests.get(url, headers={'User-Agent':'Mozilla/5.0'})
     soup = BeautifulSoup(res.text, 'html.parser')
     data = soup.find_all('td', {'class':'gall_num'})
@@ -24,7 +24,8 @@ for i in range(1,5):
 
 for i in range(0, len(gall_num)):
     try:
-        url = f'https://gall.dcinside.com/board/view/?id=ib_new2&no={gall_num[i]}'
+        
+        url = f'https://gall.dcinside.com/board/view/?id=stream_new1&no={gall_num[i]}'
         res = requests.get(url, headers={'User-Agent':'Mozilla/5.0'})
         soup = BeautifulSoup(res.text, 'html.parser')
 
@@ -43,6 +44,10 @@ for i in range(0, len(gall_num)):
     except:
         continue
 
+dc_df = pd.DataFrame(datas, index=None)
+dc_df.columns = ['번호','닉네임','아이피','시간','제목','본문']
+dc_df.to_csv('datas.csv', encoding="utf-8-sig")
+
 for data in datas:
     black = False
     for _ in blackword:
@@ -55,7 +60,6 @@ for data in datas:
     if black:
         blacklist.append(data)
 
-
-df = pd.DataFrame(blacklist, index=None)
-df.columns = ['번호','닉네임','아이피','시간','제목','본문']
-df.to_csv('dcinside.csv', encoding="utf-8-sig")
+black_df = pd.DataFrame(blacklist, index=None)
+black_df.columns = ['번호','닉네임','아이피','시간','제목','본문']
+black_df.to_csv('blacklist.csv', encoding="utf-8-sig")
